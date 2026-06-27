@@ -1,53 +1,105 @@
 #include <kernel/trap.h>
 #include <kernel/panic.h>
+#include <kernel/serial.h>
+#include <arch/timer.h>
+#include <arch/plic.h>
+#include <arch/csr.h>
 
 /* defined in src/trap_entry.S */
 extern void trap_entry();
 
 void handle_irq()
 {
-	/* not implemented */
-	BUG();
+	u64 scause;
+
+	scause = csr_read(CSR_SCAUSE);
+
+	switch (scause) {
+		case TRAP_TIMER_IRQ:
+			timer_irq();
+			break;
+		case TRAP_EXTERNAL_IRQ:
+			u32 irq = plic_hart_claim_irq(0);
+
+			if (irq == IRQ_SERIAL) serial_irq();
+
+			if (irq != 0) plic_hart_complete_irq(0, irq);
+			break;		
+		default:
+			break;
+	}
 }
 
 void handle_exception()
 {
-	/* not implemented */
-	BUG();
+	u64 scause, stval;
+
+	scause = csr_read(CSR_SCAUSE);
+	stval = csr_read(CSR_STVAL);
+	
+	switch (scause) {
+		case EXCEPTION_INST_ACCESS_FAULT:
+			error("instruction access fault at address 0x%x\n", stval);
+			break;
+		case EXCEPTION_LOAD_ACCESS_FAULT:
+			error("load access fault at address 0x%x\n", stval);
+			break;
+		case EXCEPTION_STORE_ACCESS_FAULT:
+			error("store access fault at address 0x%x\n", stval);
+			break;
+		case EXCEPTION_INST_PAGE_FAULT:
+			error("instruction page fault at address 0x%x\n", stval);
+			break;
+		case EXCEPTION_LOAD_PAGE_FAULT:
+			error("load page fault at address 0x%x\n", stval);
+			break;
+		case EXCEPTION_STORE_PAGE_FAULT:
+			error("store page fault at address 0x%x\n", stval);
+			break;
+		default:
+			error("uncaught exception! cause: 0x%x\n", scause);
+			break;
+	}
 }
 
 void trap_setup()
 {
-	/* not implemented */
-	BUG();
+	csr_write(CSR_STVEC, trap_entry);
 }
 
 void handle_trap()
 {
-	/* not implemented */
-	BUG();
+	u64 scause;
+
+	scause = csr_read(CSR_SCAUSE);
+
+	bool isInterrupt = scause & TRAP_IRQ_BIT;
+
+	isInterrupt
+		? handle_irq()
+		: handle_exception();
 }
 
 void hart_irq_enable()
 {
-	/* not implemented */
-	BUG();
+	csr_set(CSR_SSTATUS, CSR_SSTATUS_SIE);
 }
 
 u64 hart_irq_save()
 {
-	/* not implemented */
-	BUG();
+	u64 sstatus = csr_read(CSR_SSTATUS);
+	hart_irq_disable();
+	return sstatus & CSR_SSTATUS_SIE;
 }
 
 void hart_irq_restore(u64 flags)
 {
-	/* not implemented */
-	BUG();
+	flags
+		? hart_irq_enable()
+		: hart_irq_disable();
 }
 
 void hart_irq_disable()
 {
-	/* not implemented */
-	BUG();
+	csr_clear(CSR_SSTATUS, CSR_SSTATUS_SIE);
 }

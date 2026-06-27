@@ -13,7 +13,7 @@
  */
 #define IRQ_SERIAL	0xaUL
 
-#define SERIAL_BASE	((void*)0x10000000);
+#define SERIAL_BASE	((void*)0x10000000)
 
 /* https://courses.grainger.illinois.edu/ece391/su2025/docs/NS16550A.pdf */
 /* Receiver Buffer Register (read-only) */
@@ -103,14 +103,14 @@ void serial_init();
  *
  * This will flush the driver's internal buffer; @buf is assumed to be
  * large enough to fit the data. This is obviously very wrong and very
- * dangerous but we will implement a ring buffer inthe driver so that
+ * dangerous but we will implement a ring buffer in the driver so that
  * we can do serial_read(char *buf, size_t len) instead.
  */
 size_t serial_read(char *buf);
 
 /*
  * serial_putc(): write a character to the serial port
- * @s: character to be sent out
+ * @c: character to be sent out
  */
 void serial_putc(char c);
 
