@@ -2,6 +2,7 @@
 #include <kernel/panic.h>
 #include <kernel/serial.h>
 #include <arch/timer.h>
+#include <arch/plic.h>
 #include <arch/csr.h>
 
 /* defined in src/trap_entry.S */
@@ -18,7 +19,11 @@ void handle_irq()
 			timer_irq();
 			break;
 		case TRAP_EXTERNAL_IRQ:
-			// TODO: implementar
+			u32 irq = plic_hart_claim_irq(0);
+
+			if (irq == IRQ_SERIAL) serial_irq();
+
+			if (irq != 0) plic_hart_complete_irq(0, irq);
 			break;		
 		default:
 			break;
