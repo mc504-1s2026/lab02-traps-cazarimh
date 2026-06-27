@@ -3,6 +3,7 @@
 #include <kernel/mm.h>
 #include <arch/plic.h>
 #include <arch/spinlock.h>
+#include <arch/io.h>
 #include <arch/csr.h>
 
 #define SERIAL_BASE_VA ((void*)((u64)SERIAL_BASE + KERNEL_DIRECT_MAP_START))

@@ -1,5 +1,7 @@
 #include <kernel/trap.h>
 #include <kernel/panic.h>
+#include <kernel/serial.h>
+#include <arch/timer.h>
 #include <arch/csr.h>
 
 /* defined in src/trap_entry.S */
